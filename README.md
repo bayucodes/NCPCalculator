@@ -51,4 +51,4 @@ Aplikasi ini dibuat murni menggunakan teknologi *frontend vanilla* sehingga tida
 
 1. **Clone repositori ini:**
 ```bash
-   git clone [https://github.com/bayucodes/NCPCalculator.git](https://github.com/bayucodes/NCPCalculator.git)
+   git clone https://github.com/bayucodes/NCPCalculator.git
