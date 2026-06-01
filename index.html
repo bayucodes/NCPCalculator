@@ -1892,6 +1892,16 @@
 
   // ===== MODUL BARU =====
 
+  // Data amputasi (Osterkamp) - dipindahkan ke atas untuk menghindari hoisting issue
+  const ampPercentages = {
+    'amp-arm': 5.0, 'amp-upperarm': 2.7, 'amp-forearm': 2.3, 'amp-hand': 0.7,
+    'amp-leg': 16.0, 'amp-thigh': 10.1, 'amp-lowleg': 5.9, 'amp-foot': 1.5
+  };
+  const ampLabels = {
+    'amp-arm': 'Seluruh Lengan', 'amp-upperarm': 'Lengan Atas', 'amp-forearm': 'Lengan Bawah & Tangan', 'amp-hand': 'Tangan Saja',
+    'amp-leg': 'Seluruh Tungkai', 'amp-thigh': 'Paha Saja', 'amp-lowleg': 'Betis & Kaki', 'amp-foot': 'Kaki Saja'
+  };
+
   // Toggle checkbox for custom checkbox visual
   function toggleAmp(label) {
     const checkbox = label.querySelector('input[type="checkbox"]');
@@ -1899,6 +1909,15 @@
       checkbox.checked = !checkbox.checked;
       updateAmpTotal();
     }
+  }
+
+  function updateAmpTotal() {
+    let total = 0;
+    Object.keys(ampPercentages).forEach(id => {
+      if (g(id) && g(id).checked) total += ampPercentages[id];
+    });
+    const display = total > 0 ? `<b style="color:#14B8A6">Total amputasi: ${total}%</b>` : '';
+    g('amp-total-pct').innerHTML = display;
   }
 
   // Event listeners untuk checkbox amputasi (custom styling)
@@ -1948,23 +1967,6 @@
   }
 
   // MODUL 3: KOREKSI AMPUTASI (Osterkamp)
-  const ampPercentages = {
-    'amp-arm': 5.0, 'amp-upperarm': 2.7, 'amp-forearm': 2.3, 'amp-hand': 0.7,
-    'amp-leg': 16.0, 'amp-thigh': 10.1, 'amp-lowleg': 5.9, 'amp-foot': 1.5
-  };
-  const ampLabels = {
-    'amp-arm': 'Seluruh Lengan', 'amp-upperarm': 'Lengan Atas', 'amp-forearm': 'Lengan Bawah & Tangan', 'amp-hand': 'Tangan Saja',
-    'amp-leg': 'Seluruh Tungkai', 'amp-thigh': 'Paha Saja', 'amp-lowleg': 'Betis & Kaki', 'amp-foot': 'Kaki Saja'
-  };
-  function updateAmpTotal() {
-    let total = 0;
-    Object.keys(ampPercentages).forEach(id => {
-      if (g(id) && g(id).checked) total += ampPercentages[id];
-    });
-    const display = total > 0 ? `<b style="color:#14B8A6">Total amputasi: ${total}%</b>` : '';
-    g('amp-total-pct').innerHTML = display;
-  }
-
   function calcAmputasi() {
     const bbA = v('amp-bb');
     if (!bbA) { alert('Isi Berat Badan Aktual terlebih dahulu.'); return; }
