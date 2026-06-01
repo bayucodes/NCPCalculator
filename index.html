@@ -1916,6 +1916,8 @@
     Object.keys(ampPercentages).forEach(id => {
       if (g(id) && g(id).checked) total += ampPercentages[id];
     });
+    // Fix floating point precision dengan pembulatan 1 desimal
+    total = Math.round(total * 10) / 10;
     const display = total > 0 ? `<b style="color:#14B8A6">Total amputasi: ${total}%</b>` : '';
     g('amp-total-pct').innerHTML = display;
   }
@@ -1977,6 +1979,8 @@
         detailParts.push(ampLabels[id] + ' (' + ampPercentages[id] + '%)');
       }
     });
+    // Fix floating point precision
+    totalPct = Math.round(totalPct * 10) / 10;
     if (totalPct === 0) { alert('Pilih minimal satu bagian tubuh yang diamputasi.'); return; }
     if (totalPct >= 100) { alert('Total amputasi tidak boleh >= 100%.'); return; }
     const faktor = 100 - totalPct;
