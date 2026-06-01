@@ -489,9 +489,102 @@
     }
     .imt-labels { display: flex; justify-content: space-between; font-size: 0.65rem; color: #4b5563; margin-top: 2px; transition: color 0.3s; }
 
+    /* ===== DEVELOPER SECTION ===== */
+    .dev-section {
+      border-top: 1px solid #eef2ea;
+      padding: 40px 24px;
+      transition: border-color 0.3s;
+    }
+    body.dark-mode .dev-section { border-top-color: #2a3a3a; }
+    .dev-wrap {
+      max-width: 1280px; margin: 0 auto;
+    }
+    .dev-card {
+      background: #ffffff; border: 1px solid #eef2ea; border-radius: 20px;
+      padding: 22px 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      display: flex; flex-direction: column; gap: 16px;
+      transition: background 0.3s, border-color 0.3s;
+      max-width: 480px;
+    }
+    body.dark-mode .dev-card { background: #1e2936; border-color: #2d3a4a; }
+    /* identity row */
+    .dev-identity {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .dev-avatar {
+      width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+      background: linear-gradient(135deg, #14B8A6, #0f8b7a);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; color: white;
+      box-shadow: 0 4px 10px rgba(20,184,166,0.28);
+    }
+    .dev-info { line-height: 1.35; }
+    .dev-name {
+      font-family: 'Poppins', sans-serif; font-size: 0.87rem;
+      font-weight: 700; color: #1e2a3e; transition: color 0.3s;
+    }
+    body.dark-mode .dev-name { color: #e0e4e8; }
+    .dev-role { font-size: 0.73rem; color: #64748b; transition: color 0.3s; }
+    body.dark-mode .dev-role { color: #8aa0b0; }
+    /* collab text */
+    .dev-collab-text {
+      font-size: 0.79rem; color: #4b5563; line-height: 1.6;
+      transition: color 0.3s; margin: 0;
+    }
+    body.dark-mode .dev-collab-text { color: #8aa0b0; }
+    .dev-collab-text strong { color: #1e2a3e; font-weight: 600; transition: color 0.3s; }
+    body.dark-mode .dev-collab-text strong { color: #e0e4e8; }
+    /* buttons side by side */
+    .dev-buttons {
+      display: flex; flex-direction: row; gap: 8px;
+    }
+    .dev-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      font-size: 0.79rem; font-weight: 600; padding: 9px 14px;
+      border-radius: 10px; text-decoration: none; flex: 1;
+      transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
+      border: 1.5px solid transparent; cursor: pointer; box-sizing: border-box;
+      white-space: nowrap;
+    }
+    .dev-btn:hover { transform: translateY(-2px); }
+    .dev-btn-website {
+      background: rgba(20,184,166,0.1); color: #0f8b7a;
+      border-color: rgba(20,184,166,0.25);
+    }
+    .dev-btn-website:hover { background: rgba(20,184,166,0.18); box-shadow: 0 4px 12px rgba(20,184,166,0.2); }
+    body.dark-mode .dev-btn-website { background: rgba(20,184,166,0.15); color: #2dd4bf; border-color: rgba(20,184,166,0.3); }
+    .dev-btn-github {
+      background: #1e2a3e; color: #e0e4e8; border-color: #2d3e50;
+    }
+    .dev-btn-github:hover { background: #2d3e50; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    body.dark-mode .dev-btn-github { background: #263447; border-color: #2d3a4a; color: #cbd5e1; }
+    body.dark-mode .dev-btn-github:hover { background: #2d3a4a; }
+    /* meta row */
+    .dev-meta {
+      display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    }
+    .dev-stack-badge {
+      font-size: 0.67rem; font-weight: 700; padding: 3px 8px;
+      border-radius: 6px; background: rgba(20,184,166,0.1); color: #0f6e56;
+      border: 1px solid rgba(20,184,166,0.2); transition: background 0.3s, color 0.3s;
+    }
+    body.dark-mode .dev-stack-badge { background: rgba(20,184,166,0.12); color: #5eead4; border-color: rgba(20,184,166,0.25); }
+    .dev-meta-sep { color: #d1d5db; font-size: 0.72rem; }
+    body.dark-mode .dev-meta-sep { color: #3a4a5a; }
+    .dev-license {
+      font-size: 0.67rem; font-weight: 600; padding: 3px 8px;
+      border-radius: 6px; background: rgba(99,102,241,0.08); color: #4338ca;
+      border: 1px solid rgba(99,102,241,0.18); transition: background 0.3s, color 0.3s;
+    }
+    body.dark-mode .dev-license { background: rgba(99,102,241,0.12); color: #a5b4fc; border-color: rgba(99,102,241,0.25); }
+    @media (max-width: 768px) {
+      .dev-section { padding: 32px 18px; }
+      .dev-card { max-width: 100%; }
+    }
+
     /* ===== FOOTER ===== */
     footer {
-      text-align: center; padding: 28px 20px; color: #4b5563;
+      text-align: center; padding: 20px 20px; color: #4b5563;
       font-size: 0.8rem; border-top: 1px solid #eef2ea;
       transition: color 0.3s, border-color 0.3s;
     }
@@ -751,8 +844,47 @@
 
 </div>
 
+<!-- DEVELOPER SECTION -->
+<section class="dev-section">
+  <div class="dev-wrap">
+    <div class="dev-card">
+
+      <div class="dev-identity">
+        <div class="dev-avatar"><i class="fas fa-code"></i></div>
+        <div class="dev-info">
+          <div class="dev-name">Muhamad Adji Bayu Saputra, S.Tr.Gz.</div>
+          <div class="dev-role">Nutritionist &amp; Developer · NCP Tools</div>
+        </div>
+      </div>
+
+      <p class="dev-collab-text">
+        Punya ide fitur baru atau temukan bug?<br>
+        <strong>Open pull request di GitHub</strong> - semua kontribusi sangat dihargai.
+      </p>
+
+      <div class="dev-buttons">
+        <a class="dev-btn dev-btn-website" href="https://adjibayu.biz.id/" target="_blank" rel="noopener">
+          <i class="fas fa-globe"></i> adjibayu.biz.id
+        </a>
+        <a class="dev-btn dev-btn-github" href="https://github.com/bayucodes/NCPCalculator" target="_blank" rel="noopener">
+          <i class="fab fa-github"></i> GitHub
+        </a>
+      </div>
+
+      <div class="dev-meta">
+        <span class="dev-stack-badge">HTML</span>
+        <span class="dev-stack-badge">CSS</span>
+        <span class="dev-stack-badge">Vanilla JS</span>
+        <span class="dev-meta-sep">·</span>
+        <span class="dev-license"><i class="fas fa-scale-balanced"></i> MIT License</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 <footer>
-  <p>&copy; 2026 Muhamad Adji Bayu Saputra, S.Tr.Gz. | Nutritionist &amp; Tech Enthusiast</p>
+  <p>&copy; 2026 Muhamad Adji Bayu Saputra, S.Tr.Gz. · NCP Tools</p>
 </footer>
 
 <button class="back-to-top" id="backToTop"><i class="fas fa-arrow-up"></i></button>
