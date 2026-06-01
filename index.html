@@ -23,8 +23,28 @@
       transition: background-color 0.3s, color 0.3s;
     }
 
+    /* ===== CSS VARIABLES (Light Mode) ===== */
+    :root {
+      --text-color: #374151;
+      --modal-bg: #ffffff;
+      --table-header-bg: #e5e7eb;
+      --table-alt-bg: #f9fafb;
+      --table-special-bg: #fee2e2;
+      --table-hover-bg: rgba(20,184,166,0.1);
+      --accent-color: #14B8A6;
+    }
+
     /* ===== DARK MODE ===== */
-    body.dark-mode { background: #121826; color: #e0e4e8; }
+    body.dark-mode {
+      --text-color: #e0e4e8;
+      --modal-bg: #1e2936;
+      --table-header-bg: #2d3e42;
+      --table-alt-bg: #1e2936;
+      --table-special-bg: rgba(127,29,29,0.5);
+      --table-hover-bg: rgba(20,184,166,0.15);
+      --accent-color: #5eead4;
+      background: #121826; color: #e0e4e8;
+    }
     body.dark-mode .navbar { background-color: rgba(18,24,38,0.96); border-bottom-color: #2a3a3a; }
     body.dark-mode .section-wrap { border-bottom-color: #2a3a3a; }
     body.dark-mode .section-title { color: #14B8A6; }
@@ -266,6 +286,9 @@
       justify-content: center; padding: 24px 16px; overflow-y: auto;
     }
     .modal-overlay.active { display: flex; animation: fadeInBg 0.2s ease; }
+
+    /* Guide modals lebih tinggi dari modal utama */
+    #modal-fs-guide.active, #modal-bsa-guide.active { z-index: 9500; }
     @keyframes fadeInBg { from { opacity: 0; } to { opacity: 1; } }
 
     .modal {
@@ -423,6 +446,47 @@
     }
     .btn-hitung:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(20,184,166,0.4); }
     .btn-hitung:active { transform: scale(0.98); }
+
+    /* ===== HELP BUTTON ===== */
+    .btn-help {
+      background: none; border: none; cursor: pointer;
+      color: #14B8A6; font-size: 1rem; padding: 2px 6px;
+      vertical-align: middle; transition: color 0.2s;
+    }
+    .btn-help:hover { color: #0d9488; }
+
+    /* ===== BSA TABLE (Rule of Nines) ===== */
+    .bsa-table-wrap {
+      background: var(--modal-bg, #ffffff);
+      padding: 12px; border-radius: 8px; font-size: 0.88rem;
+      transition: background 0.3s;
+    }
+    .bsa-table { width: 100%; border-collapse: collapse; }
+    .bsa-table th {
+      background: var(--table-header-bg, #e5e7eb); color: var(--text-color, #1f2937);
+      padding: 6px 8px; font-weight: 600;
+      transition: background 0.3s, color 0.3s;
+    }
+    .bsa-table th:nth-child(1) { text-align: left; }
+    .bsa-table th:nth-child(2) { text-align: center; }
+    .bsa-table th:nth-child(3) { text-align: center; }
+    .bsa-table th:nth-child(4) { text-align: left; }
+    .bsa-table td { padding: 5px 8px; color: var(--text-color, #374151); transition: background 0.3s, color 0.3s; }
+    .bsa-table td:nth-child(1) { text-align: left; }
+    .bsa-table td:nth-child(2) { text-align: center; font-weight: 600; }
+    .bsa-table td:nth-child(3) { text-align: center; font-weight: 600; }
+    .bsa-table td:nth-child(4) { text-align: left; }
+    .bsa-table tr.alt td { background: var(--table-alt-bg, #f9fafb); }
+    .bsa-table tr.special td { background: var(--table-special-bg, #fee2e2); }
+    .bsa-table tr:hover td { background: var(--table-hover-bg, rgba(20,184,166,0.1)); }
+    .bsa-table td b { color: var(--accent-color, #14B8A6); }
+
+    /* Tabel Faktor Stres Guide (3 kolom) - override nth-child rules */
+    .bsa-table.fs-guide-table th:nth-child(3) { text-align: left !important; }
+    .bsa-table.fs-guide-table td:nth-child(3) { text-align: left !important; font-weight: normal !important; }
+    /* Fix: reset untuk tabel 4 kolom (BSA) */
+    .bsa-table:not(.fs-guide-table) th:nth-child(3) { text-align: center; }
+    .bsa-table:not(.fs-guide-table) td:nth-child(3) { text-align: center; font-weight: 600; }
 
     /* ===== RESULT BOX ===== */
     .result-box {
@@ -801,7 +865,7 @@
       <button class="calc-card c-blue" onclick="openModal('pennstate')">
         <div class="card-icon icon-blue"><i class="fas fa-hospital"></i></div>
         <h3>Penn State</h3>
-        <p>Kebutuhan energi pasien ICU kritis dengan ventilator (Penn State 2003b)</p>
+        <p>Estimasi RMR pasien ICU kritis dengan ventilator (2003b &amp; 2010)</p>
         <span class="card-badge badge-blue">ICU</span>
       </button>
 
@@ -1088,23 +1152,35 @@
     <div class="form-grid">
       <div class="form-field">
         <label>Faktor aktivitas</label>
-        <select id="hb-fa">
+        <select id="hb-fa" onchange="toggleFa('hb')">
           <option value="1.2">Bed rest total (1.2)</option>
           <option value="1.375">Ringan (1.375)</option>
           <option value="1.55" selected>Sedang (1.55)</option>
           <option value="1.725">Berat (1.725)</option>
           <option value="1.9">Sangat berat (1.9)</option>
+          <option value="manual">Input Manual</option>
         </select>
       </div>
+      <div class="form-field" id="hb-fa-manual" style="display:none">
+        <label>FA Manual</label>
+        <input type="number" id="hb-fa-val" step="0.01" min="1" max="3" placeholder="Contoh: 1.4">
+      </div>
       <div class="form-field">
-        <label>Faktor stres</label>
-        <select id="hb-fs">
+        <label>Faktor stres
+          <button type="button" class="btn-help" onclick="openModal('fs-guide')" title="Panduan Faktor Stres"><i class="fas fa-question-circle"></i></button>
+        </label>
+        <select id="hb-fs" onchange="toggleFs('hb')">
           <option value="1.0">Normal (1.0)</option>
-          <option value="1.1">Ringan — bedah (1.1)</option>
-          <option value="1.2" selected>Sedang — infeksi (1.2)</option>
-          <option value="1.35">Berat — trauma (1.35)</option>
+          <option value="1.1">Ringan (1.1)</option>
+          <option value="1.2" selected>Sedang (1.2)</option>
+          <option value="1.35">Berat (1.35)</option>
           <option value="1.6">Luka bakar luas (1.6)</option>
+          <option value="manual">Input Manual</option>
         </select>
+      </div>
+      <div class="form-field" id="hb-fs-manual" style="display:none">
+        <label>FS Manual</label>
+        <input type="number" id="hb-fs-val" step="0.01" min="1" max="3" placeholder="Contoh: 1.25">
       </div>
     </div>
     <button class="btn-hitung" onclick="calcHB()"><i class="fas fa-calculator"></i> Hitung Kebutuhan Energi</button>
@@ -1155,27 +1231,39 @@
     <div class="form-grid">
       <div class="form-field">
         <label>Faktor aktivitas</label>
-        <select id="mj-fa">
+        <select id="mj-fa" onchange="toggleFa('mj')">
           <option value="1.2">Bed rest total (1.2)</option>
           <option value="1.375">Ringan (1.375)</option>
           <option value="1.55" selected>Sedang (1.55)</option>
           <option value="1.725">Berat (1.725)</option>
           <option value="1.9">Sangat berat (1.9)</option>
+          <option value="manual">Input Manual</option>
         </select>
       </div>
+      <div class="form-field" id="mj-fa-manual" style="display:none">
+        <label>FA Manual</label>
+        <input type="number" id="mj-fa-val" step="0.01" min="1" max="3" placeholder="Contoh: 1.4">
+      </div>
       <div class="form-field">
-        <label>Faktor stres</label>
-        <select id="mj-fs">
+        <label>Faktor stres
+          <button type="button" class="btn-help" onclick="openModal('fs-guide')" title="Panduan Faktor Stres"><i class="fas fa-question-circle"></i></button>
+        </label>
+        <select id="mj-fs" onchange="toggleFs('mj')">
           <option value="1.0">Normal (1.0)</option>
           <option value="1.1">Ringan (1.1)</option>
           <option value="1.2" selected>Sedang (1.2)</option>
           <option value="1.35">Berat (1.35)</option>
           <option value="1.6">Luka bakar (1.6)</option>
+          <option value="manual">Input Manual</option>
         </select>
+      </div>
+      <div class="form-field" id="mj-fs-manual" style="display:none">
+        <label>FS Manual</label>
+        <input type="number" id="mj-fs-val" step="0.01" min="1" max="3" placeholder="Contoh: 1.25">
       </div>
     </div>
     <button class="btn-hitung" onclick="calcMSJ()"><i class="fas fa-calculator"></i> Hitung Kebutuhan Energi</button>
-    <div class="result-box" id="res-msj">
+    <div class="result-box" id="res-mj">
       <div class="result-cards" id="rc-msj"></div>
       <hr class="modal-divider" style="margin:10px 0">
       <div class="steps-list" id="rd-msj"></div>
@@ -1355,22 +1443,34 @@
     <div class="form-grid">
       <div class="form-field">
         <label>Faktor Aktivitas</label>
-        <select id="sc-fa">
+        <select id="sc-fa" onchange="toggleFa('sc')">
           <option value="1.0">Istirahat total / Bed rest (1.0)</option>
           <option value="1.2">Ringan (1.2)</option>
           <option value="1.4" selected>Sedang (1.4)</option>
           <option value="1.6">Berat (1.6)</option>
+          <option value="manual">Input Manual</option>
         </select>
       </div>
+      <div class="form-field" id="sc-fa-manual" style="display:none">
+        <label>FA Manual</label>
+        <input type="number" id="sc-fa-val" step="0.01" min="1" max="3" placeholder="Contoh: 1.3">
+      </div>
       <div class="form-field">
-        <label>Faktor Stres (sakit/cedera)</label>
-        <select id="sc-fs">
-          <option value="1.0" selected>Tidak ada stres / normal (1.0)</option>
-          <option value="1.1">Stres ringan (1.1) — infeksi ringan, bedah kecil</option>
-          <option value="1.2">Stres sedang (1.2) — fraktur, infeksi sedang, demam</option>
-          <option value="1.3">Stres berat (1.3) — sepsis, trauma mayor</option>
-          <option value="1.5">Stres sangat berat (1.5) — luka bakar luas, ICU, ventilator</option>
+        <label>Faktor Stres
+          <button type="button" class="btn-help" onclick="openModal('fs-guide')" title="Panduan Faktor Stres"><i class="fas fa-question-circle"></i></button>
+        </label>
+        <select id="sc-fs" onchange="toggleFs('sc')">
+          <option value="1.0" selected>Normal(1.0)</option>
+          <option value="1.1">Stres ringan (1.1)</option>
+          <option value="1.2">Stres sedang (1.2)</option>
+          <option value="1.3">Stres berat (1.3)</option>
+          <option value="1.5">Stres sangat berat (1.5)</option>
+          <option value="manual">Input Manual</option>
         </select>
+      </div>
+      <div class="form-field" id="sc-fs-manual" style="display:none">
+        <label>FS Manual</label>
+        <input type="number" id="sc-fs-val" step="0.01" min="1" max="3" placeholder="Contoh: 1.2">
       </div>
     </div>
     <button class="btn-hitung" onclick="calcSchofield()"><i class="fas fa-calculator"></i> Hitung REE Anak</button>
@@ -1379,6 +1479,42 @@
       <hr class="modal-divider" style="margin:10px 0">
       <div class="steps-list" id="rd-schofield"></div>
       <div class="macros-bar" id="macro-schofield"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODAL: FAKTOR STRES GUIDE -->
+<!-- ============================================================ -->
+<div class="modal-overlay" id="modal-fs-guide">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-header-icon icon-green"><i class="fas fa-stethoscope"></i></div>
+        <h2>Panduan Faktor Stres</h2>
+        <p>Penjelasan klasifikasi faktor stres untuk kebutuhan energi</p>
+      </div>
+      <button class="close-btn" onclick="closeModal('fs-guide')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="form-grid single-col" style="gap:8px">
+      <div class="bsa-table-wrap">
+        <table class="bsa-table fs-guide-table">
+          <tr>
+            <th>Faktor Stres</th>
+            <th>Koefisien</th>
+            <th>Contoh Kondisi</th>
+          </tr>
+          <tr><td><b>Normal / Tidak ada stres</b></td><td>1.0</td><td>Kondisi stabil, tanpa penyakit akut</td></tr>
+          <tr class="alt"><td><b>Stres Ringan</b></td><td>1.1</td><td>Infeksi ringan, bedah kecil, fraktur sederhana</td></tr>
+          <tr><td><b>Stres Sedang</b></td><td>1.2</td><td>Fraktur mayor, infeksi sedang, demam tinggi</td></tr>
+          <tr class="alt"><td><b>Stres Berat</b></td><td>1.3</td><td>Sepsis, trauma mayor, pasien pasca operasi besar</td></tr>
+          <tr><td><b>Stres Sangat Berat</b></td><td>1.5</td><td>Luka bakar luas, ICU, pasien ventilator</td></tr>
+        </table>
+      </div>
+      <div class="note-box note-info" style="margin-top:8px">
+        <i class="fas fa-lightbulb" style="margin-top:2px;flex-shrink:0"></i>
+        <span><b>Catatan:</b> Faktor stres disesuaikan dengan kondisi klinis pasien saat assessment. Jika ragu, pilih yang lebih rendah dan reassess secara berkala.</span>
+      </div>
     </div>
   </div>
 </div>
@@ -1647,14 +1783,29 @@
       <div>
         <div class="modal-header-icon icon-blue"><i class="fas fa-hospital"></i></div>
         <h2>Penn State Equation</h2>
-        <p>Kebutuhan energi pasien ICU kritis &lt; 60 tahun (2003b)</p>
+        <p>Estimasi RMR pasien ICU kritis &lt; 60 tahun</p>
       </div>
       <button class="close-btn" onclick="closeModal('pennstate')"><i class="fas fa-times"></i></button>
     </div>
     <div class="form-grid">
       <div class="form-field">
+        <label>Versi Rumus</label>
+        <select id="ps-versi" onchange="togglePennStateVersi()">
+          <option value="2003b">Penn State 2003b (Umum)</option>
+          <option value="2010">Penn State 2010 (Standar ASPEN/ESPEN)</option>
+        </select>
+      </div>
+      <div class="form-field">
         <label>REE Harris-Benedict (kkal)</label>
         <input type="number" id="ps-ree" min="500" max="5000" step="1" placeholder="Contoh: 1350">
+      </div>
+      <div class="form-field" id="ps-bb-field" style="display:none">
+        <label>Berat badan (kg)</label>
+        <input type="number" id="ps-bb" min="30" max="300" step="0.1" placeholder="Contoh: 85" oninput="calcPennStateBMI()">
+      </div>
+      <div class="form-field" id="ps-tb-field" style="display:none">
+        <label>Tinggi badan (cm)</label>
+        <input type="number" id="ps-tb" min="100" max="220" step="0.1" placeholder="Contoh: 165" oninput="calcPennStateBMI()">
       </div>
       <div class="form-field">
         <label>Minute Ventilation / VE (L/min)</label>
@@ -1667,7 +1818,11 @@
     </div>
     <div class="note-box note-info" style="margin-bottom:12px">
       <i class="fas fa-circle-info" style="margin-top:2px;flex-shrink:0"></i>
-      <span>VE lihat di monitor ventilator; T-max dari observasi 24 jam terakhir.</span>
+      <span>VE lihat di monitor ventilator; T-max dari observasi 24 jam terakhir. Untuk 2010, input BB &amp; TB untuk hitung BMI otomatis.</span>
+    </div>
+    <div id="ps-bmi-info" class="note-box note-warn" style="margin-bottom:12px;display:none">
+      <i class="fas fa-scale-balanced" style="margin-top:2px;flex-shrink:0"></i>
+      <span id="ps-bmi-text"></span>
     </div>
     <button class="btn-hitung" onclick="calcPennState()"><i class="fas fa-calculator"></i> Hitung RMR ICU</button>
     <div class="result-box" id="res-pennstate">
@@ -1698,7 +1853,9 @@
         <input type="number" id="cur-bb" min="10" max="300" step="0.1" placeholder="Contoh: 60">
       </div>
       <div class="form-field">
-        <label>Luas luka bakar (BSA %)</label>
+        <label>Luas luka bakar (BSA %)
+          <button type="button" class="btn-help" onclick="openModal('bsa-guide')" title="Panduan BSA"><i class="fas fa-question-circle"></i></button>
+        </label>
         <input type="number" id="cur-bsa" min="1" max="100" step="0.1" placeholder="Contoh: 25">
       </div>
     </div>
@@ -1717,6 +1874,53 @@
 </div>
 
 <!-- ============================================================ -->
+<!-- MODAL: BSA GUIDE (Panduan Rule of Nines) -->
+<!-- ============================================================ -->
+<div class="modal-overlay" id="modal-bsa-guide">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-header-icon icon-red"><i class="fas fa-fire"></i></div>
+        <h2>Panduan Rule of Nines</h2>
+        <p>Estimasi luas luka bakar (% BSA) pada dewasa</p>
+      </div>
+      <button class="close-btn" onclick="closeModal('bsa-guide')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="form-grid single-col" style="gap:8px">
+      <div class="note-box note-info" style="margin-bottom:8px">
+        <b>Metode Rule of Nines (Dewasa):</b>
+      </div>
+      <div class="bsa-table-wrap">
+        <table class="bsa-table">
+          <tr>
+            <th>Area Tubuh</th>
+            <th>Depan</th>
+            <th>Belakang</th>
+            <th>Total</th>
+          </tr>
+          <tr><td>Kepala &amp; Leher</td><td>4,5%</td><td>4,5%</td><td><b>9%</b></td></tr>
+          <tr class="alt"><td>Dada &amp; Perut</td><td>-</td><td>-</td><td><b>18%</b></td></tr>
+          <tr><td>Punggung &amp; Pinggang</td><td>-</td><td>-</td><td><b>18%</b></td></tr>
+          <tr class="alt"><td>Lengan Kanan</td><td>4,5%</td><td>4,5%</td><td><b>9%</b></td></tr>
+          <tr><td>Lengan Kiri</td><td>4,5%</td><td>4,5%</td><td><b>9%</b></td></tr>
+          <tr class="alt"><td>Kaki Kanan</td><td>9%</td><td>9%</td><td><b>18%</b></td></tr>
+          <tr><td>Kaki Kiri</td><td>9%</td><td>9%</td><td><b>18%</b></td></tr>
+          <tr class="special"><td>Area Kelamin</td><td>-</td><td>-</td><td><b>1%</b></td></tr>
+        </table>
+      </div>
+      <div class="note-box note-warn" style="margin-top:8px">
+        <i class="fas fa-child" style="margin-top:2px;flex-shrink:0"></i>
+        <span><b>Untuk Anak-anak:</b> Kepala lebih besar (18%), kaki lebih kecil (14% per kaki).</span>
+      </div>
+      <div class="note-box note-info" style="margin-top:8px">
+        <i class="fas fa-lightbulb" style="margin-top:2px;flex-shrink:0"></i>
+        <span><b>Tips:</b> Jumlahkan semua area yang terbakar. Contoh: Lengan kanan penuh (9%) + Dada (18%) = <b>27% BSA</b></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
 <!-- MODAL: CATCH-UP GROWTH (Kejar Tumbuh) -->
 <!-- ============================================================ -->
 <div class="modal-overlay" id="modal-catchup">
@@ -1729,14 +1933,28 @@
       </div>
       <button class="close-btn" onclick="closeModal('catchup')"><i class="fas fa-times"></i></button>
     </div>
-    <div class="form-grid single-col">
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Usia anak (tahun)</label>
+        <select id="cu-usia" onchange="toggleCatchupRDA()">
+          <option value="">-- Pilih Usia --</option>
+          <option value="100">0 – 1 tahun (100 kkal/kg)</option>
+          <option value="90">1 – 3 tahun (90 kkal/kg)</option>
+          <option value="85">3 – 5 tahun (85 kkal/kg)</option>
+          <option value="80">5 – 8 tahun (80 kkal/kg)</option>
+          <option value="70">8 – 12 tahun (70 kkal/kg)</option>
+          <option value="60">12 – 15 tahun (60 kkal/kg)</option>
+          <option value="55">15 – 18 tahun (55 kkal/kg)</option>
+          <option value="manual">Lainnya (Input Manual)</option>
+        </select>
+      </div>
+      <div class="form-field" id="cu-rda-manual-field" style="display:none">
+        <label>RDA Manual (kkal/kg)</label>
+        <input type="number" id="cu-rda-manual" min="50" max="200" step="1" placeholder="Contoh: 95">
+      </div>
       <div class="form-field">
         <label>BBI berdasarkan tinggi badan (kg)</label>
         <input type="number" id="cu-bbi" min="1" max="80" step="0.1" placeholder="Contoh: 14">
-      </div>
-      <div class="form-field">
-        <label>RDA Energi usia anak (kkal/kg)</label>
-        <input type="number" id="cu-rda" min="50" max="150" step="1" placeholder="Contoh: 100">
       </div>
       <div class="form-field">
         <label>Berat badan aktual anak (kg)</label>
@@ -1745,7 +1963,7 @@
     </div>
     <div class="note-box note-info" style="margin-bottom:12px">
       <i class="fas fa-circle-info" style="margin-top:2px;flex-shrink:0"></i>
-      <span>BBI dapat dari grafiko WHO; RDA sesuai usia biologis anak (usia nutri).</span>
+      <span>BBI dapat dari grafiko WHO; RDA sesuai usia biologis anak (usia nutri) atau klinis.</span>
     </div>
     <button class="btn-hitung" onclick="calcCatchup()"><i class="fas fa-calculator"></i> Hitung Target Kalori</button>
     <div class="result-box" id="res-catchup">
@@ -1931,7 +2149,7 @@
     let bmr;
     if (gender === 'L') bmr = 88.362 + (13.397*bb) + (4.799*tb) - (5.677*usia);
     else                bmr = 447.593 + (9.247*bb) + (3.098*tb) - (4.330*usia);
-    const fa = parseFloat(g('hb-fa').value), fs = parseFloat(g('hb-fs').value);
+    const fa = getFa('hb'), fs = getFs('hb');
     const tee = bmr * fa * fs;
     const cards = rcCard(Math.round(bmr)+' kcal','BMR') + rcCard(fa,'Fa. Aktivitas') +
                   rcCard(fs,'Fa. Stres') + rcCard(Math.round(tee)+' kcal','Total Energi');
@@ -1948,7 +2166,7 @@
     let ree;
     if (gender === 'L') ree = (10*bb) + (6.25*tb) - (5*usia) + 5;
     else                ree = (10*bb) + (6.25*tb) - (5*usia) - 161;
-    const fa = parseFloat(g('mj-fa').value), fs = parseFloat(g('mj-fs').value);
+    const fa = getFa('mj'), fs = getFs('mj');
     const tee = ree * fa * fs;
     const cards = rcCard(Math.round(ree)+' kcal','REE') + rcCard(fa,'Fa. Aktivitas') +
                   rcCard(fs,'Fa. Stres') + rcCard(Math.round(tee)+' kcal','Total Energi');
@@ -2005,7 +2223,7 @@
       else                { ree = (16.252*bb) + (10.232*tb) - 413.5; rumus = `(16.252×${bb}) + (10.232×${tb}) − 413.5`; }
     } else if (usia <= 10) {
       grup = '3–10 tahun';
-      if (gender === 'L') { ree = (19.587*bb) + (1.303*tb) + 414.9; rumus = `(19.587×${bb}) + (1.303×${tb}) + 414.9`; }
+      if (gender === 'L') { ree = (19.465*bb) + (1.0656*tb) + 414.2; rumus = `(19.465×${bb}) + (1.0656×${tb}) + 414.2`; }
       else                { ree = (16.969*bb) + (1.618*tb) + 371.2; rumus = `(16.969×${bb}) + (1.618×${tb}) + 371.2`; }
     } else {
       grup = '10–18 tahun';
@@ -2014,8 +2232,7 @@
     }
 
     // --- Faktor Aktivitas dan Faktor Stres DIPISAH ---
-    const fa = parseFloat(g('sc-fa').value);
-    const fs = parseFloat(g('sc-fs').value);
+    const fa = getFa('sc'), fs = getFs('sc');
     const tee = ree * fa * fs;
 
     const cards = rcCard(Math.round(ree)+' kcal','REE Schofield') +
@@ -2168,17 +2385,76 @@
     showResult('asites', cards, steps, 'Dry weight adalah estimasi berat tanpa cairan berlebih. Pantau ketat pasien dengan gagal jantung/ginjal/sirosis.', 'warn');
   }
 
-  // MODUL 5: PENN STATE (ICU Energy)
+  // PENN STATE TOGGLE
+  function togglePennStateVersi() {
+    const versi = g('ps-versi').value;
+    if (versi === '2010') {
+      g('ps-bb-field').style.display = 'block';
+      g('ps-tb-field').style.display = 'block';
+      g('ps-bmi-info').style.display = 'flex';
+    } else {
+      g('ps-bb-field').style.display = 'none';
+      g('ps-tb-field').style.display = 'none';
+      g('ps-bmi-info').style.display = 'none';
+      g('ps-bb').value = '';
+      g('ps-tb').value = '';
+    }
+    g('res-pennstate').classList.remove('show');
+  }
+
+  function calcPennStateBMI() {
+    const bb = v('ps-bb'), tb = v('ps-tb');
+    if (bb && tb) {
+      const tbm = tb / 100;
+      const bmi = (bb / (tbm * tbm)).toFixed(1);
+      const kategori = bmi >= 30 ? 'Obesitas (BMI ≥ 30) → Gunakan koefisien 0.71' : 'Non-Obesitas (BMI < 30) → Gunakan koefisien 0.96';
+      g('ps-bmi-text').innerHTML = `BMI: <b>${bmi} kg/m²</b> — ${kategori}`;
+    }
+  }
+
+  // PENN STATE EQUATION
   function calcPennState() {
+    const versi = g('ps-versi').value;
     const reeHB = v('ps-ree'), ve = v('ps-ve'), tmax = v('ps-tmax');
     if (!reeHB || !ve || !tmax) { alert('Isi semua parameter terlebih dahulu.'); return; }
-    const rmr = (reeHB * 1.1) + (ve * 140) + (tmax * 33) - 5156;
+
+    let rumusStr, rmr, coefREE, coefTmax;
+    const coefVE = 64, intercept = -4672;
+
+    if (versi === '2003b') {
+      // Penn State 2003b: RMR = (REE × 0.96) + (VE × 64) + (Tmax × 309) − 4672
+      coefREE = 0.96; coefTmax = 309;
+      rumusStr = `(${reeHB} × 0.96) + (${ve} × 64) + (${tmax} × 309) − 4672`;
+      rmr = (reeHB * 0.96) + (ve * 64) + (tmax * 309) - 4672;
+    } else {
+      // Penn State 2010
+      const bb = v('ps-bb'), tb = v('ps-tb');
+      if (!bb || !tb) { alert('Isi Berat Badan dan Tinggi Badan untuk versi 2010.'); return; }
+      const tbm = tb / 100;
+      const bmi = (bb / (tbm * tbm));
+      if (bmi >= 30) {
+        // Obesitas: RMR = (REE × 0.71) + (VE × 64) + (Tmax × 308) − 4672
+        coefREE = 0.71; coefTmax = 308;
+        rumusStr = `(${reeHB} × 0.71) + (${ve} × 64) + (${tmax} × 308) − 4672 (BMI ${bmi.toFixed(1)} ≥ 30 → Obesitas)`;
+      } else {
+        // Non-obesitas: RMR = (REE × 0.96) + (VE × 64) + (Tmax × 308) − 4672
+        coefREE = 0.96; coefTmax = 308;
+        rumusStr = `(${reeHB} × 0.96) + (${ve} × 64) + (${tmax} × 308) − 4672 (BMI ${bmi.toFixed(1)} < 30 → Non-Obesitas)`;
+      }
+      rmr = (reeHB * coefREE) + (ve * coefVE) + (tmax * coefTmax) + intercept;
+    }
+
     const rmrRounded = Math.round(rmr);
-    const cards = rcCard(reeHB + ' kcal', 'REE HB') + rcCard(ve + ' L/min', 'VE') + rcCard(tmax + ' °C', 'T-max') + rcCard(rmrRounded + ' kcal', 'RMR Penn State');
+    const versiLabel = versi === '2003b' ? 'Penn State 2003b' : 'Penn State 2010';
+    const cards = rcCard(reeHB + ' kcal', 'REE HB') + rcCard(ve + ' L/min', 'VE') + rcCard(tmax + ' °C', 'T-max') +
+                  rcCard(rmrRounded + ' kcal', 'RMR ' + versiLabel);
     const steps = stepItem(1, `REE Harris-Benedict: <b>${reeHB} kcal</b>`) +
-                  stepItem(2, `RMR = (${reeHB} × 1.1) + (${ve} × 140) + (${tmax} × 33) − 5156`) +
+                  stepItem(2, `Rumus: <b>${rumusStr}</b>`) +
                   stepItem(3, `RMR = <b>${rmrRounded} kcal/hari</b>`);
-    showResult('pennstate', cards, steps, 'Penn State 2003b direkomendasikan ASPEN/ESPEN untuk pasien ICU &lt; 60 tahun dengan ventilator mekanik.', 'warn');
+    const note = versi === '2003b'
+      ? 'Penn State 2003b — original version untuk pasien ICU &lt; 60 tahun.'
+      : 'Penn State 2010 — versi terbaru yang direkomendasikan ASPEN/ESPEN. Koefisien REE berubah berdasarkan BMI.';
+    showResult('pennstate', cards, steps, note, versi === '2010' ? 'info' : 'warn');
     buildMacros(Math.max(1000, rmrRounded), 'macro-pennstate');
   }
 
@@ -2197,19 +2473,87 @@
     buildMacros(Math.round(energi), 'macro-curreri');
   }
 
+  // TOGGLE FAKTOR AKTIVITAS
+  function toggleFa(prefix) {
+    const fa = g(prefix + '-fa');
+    if (fa.value === 'manual') {
+      g(prefix + '-fa-manual').style.display = 'block';
+    } else {
+      g(prefix + '-fa-manual').style.display = 'none';
+      const manualInput = g(prefix + '-fa-val');
+      if (manualInput) manualInput.value = '';
+    }
+    const resBox = g('res-' + prefix) || g('res-schofield');
+    if (resBox) resBox.classList.remove('show');
+  }
+
+  // TOGGLE FAKTOR STRES
+  function toggleFs(prefix) {
+    const fs = g(prefix + '-fs');
+    if (fs.value === 'manual') {
+      g(prefix + '-fs-manual').style.display = 'block';
+    } else {
+      g(prefix + '-fs-manual').style.display = 'none';
+      const manualInput = g(prefix + '-fs-val');
+      if (manualInput) manualInput.value = '';
+    }
+    const resBox = g('res-' + prefix) || g('res-schofield');
+    if (resBox) resBox.classList.remove('show');
+  }
+
+  // GET FA VALUE (DROPDOWN ATAU MANUAL)
+  function getFa(prefix) {
+    const fa = g(prefix + '-fa');
+    if (fa.value === 'manual') {
+      return parseFloat(g(prefix + '-fa-val').value) || 1.0;
+    }
+    return parseFloat(fa.value);
+  }
+
+  // GET FS VALUE (DROPDOWN ATAU MANUAL)
+  function getFs(prefix) {
+    const fs = g(prefix + '-fs');
+    if (fs.value === 'manual') {
+      return parseFloat(g(prefix + '-fs-val').value) || 1.0;
+    }
+    return parseFloat(fs.value);
+  }
+
+  // CATCH-UP GROWTH TOGGLE
+  function toggleCatchupRDA() {
+    const selected = g('cu-usia').value;
+    if (selected === 'manual') {
+      g('cu-rda-manual-field').style.display = 'block';
+    } else {
+      g('cu-rda-manual-field').style.display = 'none';
+      g('cu-rda-manual').value = '';
+    }
+    g('res-catchup').classList.remove('show');
+  }
+
   // MODUL 7: CATCH-UP GROWTH (Kejar Tumbuh)
   function calcCatchup() {
-    const bbi = v('cu-bbi'), rda = v('cu-rda'), bbA = v('cu-bb');
-    if (!bbi || !rda || !bbA) { alert('Isi semua parameter terlebih dahulu.'); return; }
+    const selected = g('cu-usia').value;
+    if (!selected || selected === '') { alert('Pilih usia anak terlebih dahulu.'); return; }
+    const bbi = v('cu-bbi'), bbA = v('cu-bb');
+    let rda, rdaSource;
+    if (selected === 'manual') {
+      rda = v('cu-rda-manual');
+      if (!rda) { alert('Isi RDA manual terlebih dahulu.'); return; }
+      rdaSource = 'Input Manual';
+    } else {
+      rda = parseInt(selected);
+      const ageLabels = { '100': '0-1 tahun', '90': '1-3 tahun', '85': '3-5 tahun', '80': '5-8 tahun', '70': '8-12 tahun', '60': '12-15 tahun', '55': '15-18 tahun' };
+      rdaSource = ageLabels[selected] + ' (' + rda + ' kkal/kg)';
+    }
     const targetKalori = (bbi * rda) / bbA;
     const targetKaloriRounded = Math.round(targetKalori * 10) / 10;
-    const cards = rcCard(bbi + ' kg', 'BBI (TB)') + rcCard(rda + ' kkal/kg', 'RDA Energi Usia') +
+    const cards = rcCard(bbi + ' kg', 'BBI (TB)') + rcCard(rda + ' kkal/kg', 'RDA Energi') +
                   rcCard(bbA + ' kg', 'BB Aktual') + rcCard(targetKaloriRounded + ' kkal/kg', 'Target/kgs (Catch-up)');
-    const steps = stepItem(1, `(BBI × RDA Usia) ÷ BB Aktual = (${bbi} × ${rda}) ÷ ${bbA}`) +
-                  stepItem(2, `Target kalori kejar tumbuh = <b>${targetKaloriRounded} kkal/kgBB/hari</b>`) +
-                  stepItem(3, `Artinya: anak butuh <b>${targetKaloriRounded} kcal/kgBB/hari</b> untuk mengejar ketertinggalan (bukan kebutuhan normal).`);
+    const steps = stepItem(1, 'RDA: <b>' + rdaSource + '</b>') + stepItem(2, '(BBI x RDA) / BB Aktual = (' + bbi + ' x ' + rda + ') / ' + bbA) + stepItem(3, 'Target kalori kejar tumbuh = <b>' + targetKaloriRounded + ' kcal/kgBB/hari</b>') + stepItem(4, 'Artinya: anak butuh <b>' + targetKaloriRounded + ' kcal/kgBB/hari</b> untuk追上 ketertinggalan (bukan kebutuhan normal).');
     showResult('catchup', cards, steps, 'Gunakan formula padat nutrisi (energi tinggi, protein tinggi) untuk mencapai target ini secara bertahap.', 'warn');
   }
+
 </script>
 </body>
 </html>
