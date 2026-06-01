@@ -1219,12 +1219,22 @@
     <hr class="modal-divider">
     <div class="form-grid">
       <div class="form-field">
-        <label>Faktor aktivitas &amp; stres</label>
+        <label>Faktor Aktivitas</label>
         <select id="sc-fa">
-          <option value="1.0">Istirahat total (1.0)</option>
+          <option value="1.0">Istirahat total / Bed rest (1.0)</option>
           <option value="1.2">Ringan (1.2)</option>
           <option value="1.4" selected>Sedang (1.4)</option>
           <option value="1.6">Berat (1.6)</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Faktor Stres (sakit/cedera)</label>
+        <select id="sc-fs">
+          <option value="1.0" selected>Tidak ada stres / normal (1.0)</option>
+          <option value="1.1">Stres ringan (1.1) — infeksi ringan, bedah kecil</option>
+          <option value="1.2">Stres sedang (1.2) — fraktur, infeksi sedang, demam</option>
+          <option value="1.3">Stres berat (1.3) — sepsis, trauma mayor</option>
+          <option value="1.5">Stres sangat berat (1.5) — luka bakar luas, ICU, ventilator</option>
         </select>
       </div>
     </div>
@@ -1233,6 +1243,7 @@
       <div class="result-cards" id="rc-schofield"></div>
       <hr class="modal-divider" style="margin:10px 0">
       <div class="steps-list" id="rd-schofield"></div>
+      <div class="macros-bar" id="macro-schofield"></div>
     </div>
   </div>
 </div>
@@ -1866,13 +1877,23 @@
       if (gender === 'L') { ree = (16.25*bb) + (1.372*tb) + 515.5; rumus = `(16.25×${bb}) + (1.372×${tb}) + 515.5`; }
       else                { ree = (8.365*bb) + (4.65*tb) + 200;     rumus = `(8.365×${bb}) + (4.65×${tb}) + 200`; }
     }
-    const fa = parseFloat(g('sc-fa').value), tee = ree * fa;
-    const cards = rcCard(Math.round(ree)+' kcal','REE Schofield') + rcCard(fa,'Fa. Aktivitas') +
-                  rcCard(Math.round(tee)+' kcal','Total Energi');
-    const steps = stepItem(1, `Kelompok: <b>${grup} (${gender==='L'?'L':'P'})</b>`) +
+
+    // --- Faktor Aktivitas dan Faktor Stres DIPISAH ---
+    const fa = parseFloat(g('sc-fa').value);
+    const fs = parseFloat(g('sc-fs').value);
+    const tee = ree * fa * fs;
+
+    const cards = rcCard(Math.round(ree)+' kcal','REE Schofield') +
+                  rcCard(fa,'Fa. Aktivitas') +
+                  rcCard(fs,'Fa. Stres') +
+                  rcCard(Math.round(tee)+' kcal','Total Energi (TEE)');
+
+    const steps = stepItem(1, `Kelompok: <b>${grup} (${gender==='L'?'Laki-laki':'Perempuan'})</b>`) +
                   stepItem(2, `REE = ${rumus} = <b>${Math.round(ree)} kcal</b>`) +
-                  stepItem(3, `TEE = ${Math.round(ree)} × ${fa} = <b>${Math.round(tee)} kcal/hari</b>`);
-    showResult('schofield', cards, steps);
+                  stepItem(3, `TEE = REE × FA × FS = ${Math.round(ree)} × ${fa} × ${fs} = <b>${Math.round(tee)} kcal/hari</b>`);
+
+    showResult('schofield', cards, steps, 'Faktor stres disesuaikan dengan kondisi klinis anak (demam, infeksi, sepsis, trauma, luka bakar, ICU, dll)', 'info');
+    buildMacros(tee, 'macro-schofield');
   }
 
   // HOLLIDAY-SEGAR
