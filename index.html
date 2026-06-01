@@ -492,12 +492,12 @@
     /* ===== DEVELOPER SECTION ===== */
     .dev-section {
       border-top: 1px solid #eef2ea;
-      padding: 40px 24px;
+      padding: 40px 0;
       transition: border-color 0.3s;
     }
     body.dark-mode .dev-section { border-top-color: #2a3a3a; }
     .dev-wrap {
-      max-width: 1280px; margin: 0 auto;
+      max-width: 1280px; margin: 0 auto; padding: 0 24px;
     }
     .dev-card {
       background: #ffffff; border: 1px solid #eef2ea; border-radius: 20px;
@@ -578,7 +578,8 @@
     }
     body.dark-mode .dev-license { background: rgba(99,102,241,0.12); color: #a5b4fc; border-color: rgba(99,102,241,0.25); }
     @media (max-width: 768px) {
-      .dev-section { padding: 32px 18px; }
+      .dev-wrap { padding: 0 18px; }
+      .dev-section { padding: 32px 0; }
       .dev-card { max-width: 100%; }
     }
 
@@ -867,7 +868,7 @@
           <i class="fas fa-globe"></i> adjibayu.biz.id
         </a>
         <a class="dev-btn dev-btn-github" href="https://github.com/bayucodes/NCPCalculator" target="_blank" rel="noopener">
-          <i class="fab fa-github"></i> GitHub
+          <i class="fab fa-github"></i> GitHub · Pull Request
         </a>
       </div>
 
@@ -884,7 +885,7 @@
 </section>
 
 <footer>
-  <p>&copy; 2026 Muhamad Adji Bayu Saputra, S.Tr.Gz. · NCP Tools</p>
+  <p>&copy; 2026 Muhamad Adji Bayu Saputra, S.Tr.Gz. · Nutritionist & Tech Enthusiast</p>
 </footer>
 
 <button class="back-to-top" id="backToTop"><i class="fas fa-arrow-up"></i></button>
