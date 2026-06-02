@@ -1125,7 +1125,11 @@
         </div>
       </div>
       <div class="form-field">
-        <label>Tinggi lutut (cm)</label>
+        <label>Usia (tahun)</label>
+        <input type="number" id="ch-usia" min="60" max="120" placeholder="Contoh: 70">
+      </div>
+      <div class="form-field">
+        <label>Tinggi lutut / TL (cm)</label>
         <input type="number" id="ch-tl" min="20" max="80" step="0.1" placeholder="Contoh: 45">
       </div>
     </div>
@@ -2111,19 +2115,24 @@
   function calcBBI() {
     const gender = grd('bbi-g'), tb = v('bbi-tb');
     if (!tb) { alert('Isi Tinggi Badan terlebih dahulu.'); return; }
-    const pakai10 = !((gender === 'L' && tb < 160) || (gender === 'P' && tb < 150));
+    // Threshold: Pria TB < 165 cm, Wanita TB < 160 cm → tanpa koreksi (Broca)
+    const threshold = gender === 'L' ? 165 : 160;
+    const koreksiPct = gender === 'L' ? 10 : 15;
+    const pakaiKoreksi = tb >= threshold;
     const base = tb - 100;
-    const bbi = pakai10 ? rnd(base - (base * 0.1), 1) : base;
+    const bbi = pakaiKoreksi ? rnd(base - (base * koreksiPct / 100), 1) : rnd(base, 1);
     const cards = rcCard(bbi + ' kg', 'BBI') + rcCard(rnd(bbi*0.9,1) + '–' + rnd(bbi*1.1,1) + ' kg', 'Rentang ±10%');
     let steps;
-    if (pakai10) {
+    if (pakaiKoreksi) {
       steps = stepItem(1, `TB − 100 = ${tb} − 100 = <b>${base} kg</b>`) +
-              stepItem(2, `Koreksi 10%: ${base} − (10% × ${base}) = <b>${bbi} kg</b>`);
+              stepItem(2, `Koreksi ${koreksiPct}%: ${base} − (${koreksiPct}% × ${base}) = <b>${bbi} kg</b>`);
     } else {
-      steps = stepItem(1, `TB &lt; ${gender==='L'?160:150} cm → koreksi 10% <b>tidak berlaku</b>`) +
+      steps = stepItem(1, `TB &lt; ${threshold} cm → koreksi ${koreksiPct}% <b>tidak berlaku</b>`) +
               stepItem(2, `BBI = TB − 100 = ${tb} − 100 = <b>${bbi} kg</b>`);
     }
-    showResult('bbi', cards, steps, pakai10 ? `Koreksi 10% berlaku karena TB ≥ ${gender==='L'?160:150} cm.` : `TB < ${gender==='L'?160:150} cm — rumus disederhanakan menjadi TB − 100.`);
+    showResult('bbi', cards, steps, pakaiKoreksi
+      ? `Koreksi ${koreksiPct}% berlaku karena TB ≥ ${threshold} cm (${gender==='L'?'pria':'wanita'}).`
+      : `TB &lt; ${threshold} cm — rumus Broca tanpa koreksi untuk ${gender==='L'?'pria':'wanita'}.`);
   }
 
   // ESTIMASI BB LILA
@@ -2132,9 +2141,11 @@
     if (!tb || !lila) { alert('Isi Tinggi Badan Estimasi dan LiLA Aktual terlebih dahulu.'); return; }
     const lilaStd = gender === 'L' ? 31.7 : 28.7;
     const persen = rnd((lila / lilaStd) * 100, 1);
-    // Hitung BBI Broca
-    const pakai10 = !((gender === 'L' && tb < 160) || (gender === 'P' && tb < 150));
-    const bbi = pakai10 ? rnd((tb - 100) * 0.9, 1) : rnd(tb - 100, 1);
+    // Hitung BBI Broca (Pria: koreksi 10% jika TB ≥ 165 cm; Wanita: koreksi 15% jika TB ≥ 160 cm)
+    const thresholdLila = gender === 'L' ? 165 : 160;
+    const koreksiPctLila = gender === 'L' ? 10 : 15;
+    const pakaiKoreksiLila = tb >= thresholdLila;
+    const bbi = pakaiKoreksiLila ? rnd((tb - 100) - (tb - 100) * koreksiPctLila / 100, 1) : rnd(tb - 100, 1);
     // Hitung BB Estimasi
     const estBB = rnd((persen * bbi) / 100, 2);
     let statusLila, noteType = 'info';
@@ -2144,7 +2155,7 @@
     else                    { statusLila = 'Overweight/Obesitas'; noteType = 'warn'; }
     const cards = rcCard(lilaStd + ' cm', 'LiLA Standar') + rcCard(persen + '%', '% LiLA') +
                   rcCard(bbi + ' kg', 'BBI') + rcCard(estBB + ' kg', 'Estimasi BB');
-    const rumusBbi = pakai10 ? `(${tb} − 100) × 0.9 = ${bbi} kg` : `${tb} − 100 = ${bbi} kg`;
+    const rumusBbi = pakaiKoreksiLila ? `(${tb} − 100) − (${koreksiPctLila}% × ${tb - 100}) = ${bbi} kg` : `${tb} − 100 = ${bbi} kg`;
     const steps = stepItem(1, `LiLA standar Frisancho (<b>${gender==='L'?'pria':'wanita'}</b>) = <b>${lilaStd} cm</b>`) +
                   stepItem(2, `% LiLA = (${lila} ÷ ${lilaStd}) × 100 = <b>${persen}%</b> → <b>${statusLila}</b>`) +
                   stepItem(3, `BBI = ${rumusBbi}`) +
@@ -2154,16 +2165,23 @@
 
   // CHUMLEA
   function calcChumlea() {
-    const gender = grd('ch-g'), tl = v('ch-tl');
+    const gender = grd('ch-g'), usia = v('ch-usia'), tl = v('ch-tl');
+    if (!usia) { alert('Isi Usia terlebih dahulu.'); return; }
     if (!tl) { alert('Isi Tinggi Lutut terlebih dahulu.'); return; }
+    if (usia < 60) { alert('Rumus Chumlea hanya berlaku untuk usia ≥ 60 tahun.'); return; }
     let tb, rumus;
-    if (gender === 'L') { tb = 59.01 + (2.39 * tl); rumus = `59.01 + (2.39 × ${tl})`; }
-    else                { tb = 46.10 + (1.92 * tl); rumus = `46.10 + (1.92 × ${tl})`; }
+    if (gender === 'L') {
+      tb = 64.19 - (0.04 * usia) + (2.02 * tl);
+      rumus = `64.19 − (0.04 × ${usia}) + (2.02 × ${tl})`;
+    } else {
+      tb = 84.88 - (0.24 * usia) + (1.83 * tl);
+      rumus = `84.88 − (0.24 × ${usia}) + (1.83 × ${tl})`;
+    }
     tb = rnd(tb, 1);
-    const cards = rcCard(tb + ' cm', 'Estimasi TB');
-    const steps = stepItem(1, `Rumus Chumlea (${gender==='L'?'pria':'wanita'}): <b>${rumus}</b>`) +
+    const cards = rcCard(usia + ' thn', 'Usia') + rcCard(tl + ' cm', 'Tinggi Lutut') + rcCard(tb + ' cm', 'Estimasi TB');
+    const steps = stepItem(1, `Rumus Chumlea (${gender==='L'?'pria':'wanita'}, usia ≥ 60 tahun): <b>TB = ${rumus}</b>`) +
                   stepItem(2, `Hasil TB estimasi = <b>${tb} cm</b>`);
-    showResult('chumlea', cards, steps, 'Gunakan TB estimasi ini untuk menghitung BBI atau kebutuhan energi secara manual di kalkulator lain.');
+    showResult('chumlea', cards, steps, 'Cara pengukuran: bentuk sudut 90° pada lutut kiri, ukur dari telapak kaki (tumit) hingga permukaan lutut menggunakan knee height caliper. Gunakan TB estimasi ini untuk menghitung BBI atau kebutuhan energi.', 'info');
   }
 
   // HARRIS-BENEDICT
